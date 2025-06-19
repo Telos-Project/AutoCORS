@@ -28,6 +28,8 @@ var autoCORS = {
 					},
 					body: null
 				};
+
+				this.sync = false;
 			}
 
 			open(method, uri, sync) {
@@ -35,19 +37,18 @@ var autoCORS = {
 				this.request.request.method = method;
 				this.request.request.uri = uri;
 
-				super.open(method, uri, sync);
+				this.sync = sync;
 			}
 
 			setRequestHeader(name, value) {
-
 				this.request.headers[name] = value;
-
-				super.setRequestHeader(name, value);
 			}
 
 			send(body) {
 
 				this.request.body = body;
+
+				this.request = onRequest(this.request);
 
 				let response = onResponse != null ?
 					onResponse(this.request) : null;
@@ -73,8 +74,20 @@ var autoCORS = {
 						this.onreadystatechange();
 				}
 
-				else
-					super.send(body);
+				else {
+					
+					super.open(
+						this.request.request.method,
+						this.request.request.uri,
+						this.sync
+					);
+
+					Object.keys(this.request.headers).forEach(key => {
+						super.setRequestHeader(key, this.request.headers[key]);
+					});
+
+					super.send(this.request.body);
+				}
 			}
 		}
 
