@@ -70,7 +70,7 @@ of HTTP JSON.
 
 The AutoCORS script can be included in your website from the following CDN link:
 
-    [link]
+    https://cdn.jsdelivr.net/gh/Telos-Project/AutoCORS/Code/autoCORS.js
 
 #### 2.2.2 - Supported Proxies
 
