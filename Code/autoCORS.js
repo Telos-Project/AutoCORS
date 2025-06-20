@@ -7,6 +7,10 @@ var autoCORS = {
 
 		autoCORS.onSend(autoCORS.onRequestDefault);
 	},
+	disable: () => {
+		window.XMLHttpRequest = autoCORS.DefaultXMLHttpRequest;
+		window.fetch = autoCORS.defaultFetch;
+	},
 	onRequestDefault: (request) => {
 		return autoCORS.proxy != null ? autoCORS.proxy(request) : null;
 	},
@@ -317,3 +321,6 @@ var autoCORS = {
 		}
 	}
 };
+
+if(typeof module == "object")
+	module.exports = autoCORS;
