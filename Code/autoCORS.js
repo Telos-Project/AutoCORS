@@ -1,15 +1,35 @@
 var autoCORS = {
-	defaultFetch: window.fetch,
-	DefaultXMLHttpRequest: window.XMLHttpRequest,
 	applyDefault: () => {
 
-		autoCORS.proxy = autoCORS.proxies.corsProxy;
+		autoCORS.proxy = autoCORS.utils.proxies.corsProxy;
 
 		autoCORS.onSend(autoCORS.onRequestDefault);
+	},
+	defaultFetch: typeof window != "undefined" ? window.fetch : null,
+	DefaultXMLHttpRequest: typeof window != "undefined" ?
+		window.XMLHttpRequest : null,
+	getPlatform: () => {
+
+		if(typeof process === 'object') {
+
+			if(typeof process.versions === 'object') {
+
+				if(typeof process.versions.node !== 'undefined') {
+					return "node";
+				}
+			}
+		}
+
+		return "browser";
 	},
 	disable: () => {
 		window.XMLHttpRequest = autoCORS.DefaultXMLHttpRequest;
 		window.fetch = autoCORS.defaultFetch;
+	},
+	input: (text) => {
+
+		return autoCORS.getPlatform() == "browser" ?
+			prompt(text) : require("readline-sync").question(text);
 	},
 	onRequestDefault: (request) => {
 		return autoCORS.proxy != null ? autoCORS.proxy(request) : null;
@@ -121,41 +141,76 @@ var autoCORS = {
 				);
 		}
 	},
-	proxies: {
-		corsProxy: (request) => {
-
-			request = JSON.parse(JSON.stringify(request));
-
-			if(request.request.uri.startsWith(
-				"https://raw.githubusercontent.com/")) {
-
-				request.request.uri =
-					autoCORS.utils.formatGithubURI(
-						request.request.uri
-					);
-			}
-
-			else {
-			
-				request.request.uri =
-					"https://corsproxy.io/?url=" +
-						encodeURIComponent(
-							request.request.uri
-						).split("%20").join("%2520");
-			}
-
-			return request;
-		}
-	},
 	proxy: null,
+	read: (path, callback) => {
+
+		if(typeof path == "function") {
+
+			let input = document.createElement("input");
+	
+			input.setAttribute("type", "file");
+			input.setAttribute("style", "display: none");
+	
+			let listener = function(event) {
+	
+				let upload = event.target.files[0];
+	
+				if(!upload)
+					return;
+				
+				let reader = new FileReader();
+	
+				reader.onload = function(event) {
+					path(event.target.result, upload.name);
+				};
+	
+				reader.readAsText(upload);
+			}
+	
+			input.addEventListener(
+				'change',
+				listener,
+				false
+			);
+	
+			document.documentElement.appendChild(input);
+	
+			input.click();
+	
+			document.documentElement.removeChild(input);
+
+			return;
+		}
+
+		if(autoCORS.getPlatform() == "browser" ||
+			path.startsWith("http://") ||
+			path.startsWith("https://")) {
+
+			let response = autoCORS.send(
+				{ request: { method: "GET", uri: path } },
+				callback != null ?
+					(response) => { callback(response.body); } : null
+			);
+
+			return callback != null ? null : response.body;
+		}
+
+		return callback != null ?
+			require("fs").readFile(path, "utf-8", callback) :
+			require("fs").readFileSync(path, "utf-8");
+	},
 	send: (request, callback) => {
 
 		if(typeof request == "string")
 			request = autoCORS.toJSON(request);
 
-		let call = new XMLHttpRequest();
+		let call = autoCORS.getPlatform() == "browser" ?
+			new XMLHttpRequest() :
+			new (require("xmlhttprequest").XMLHttpRequest)();
 		
-		call.open(request.request.method, request.request.uri, callback != null);
+		call.open(
+			request.request.method, request.request.uri, callback != null
+		);
 
 		if(request.headers != null) {
 			
@@ -187,8 +242,11 @@ var autoCORS = {
 
 						let header = headers[i].split(":");
 
-						if(header.length >= 2)
-							response.headers[header[0].trim()] = header[1].trim();
+						if(header.length >= 2) {
+
+							response.headers[header[0].trim()] =
+								header[1].trim();
+						}
 
 						else
 							response.headers[header[0].trim()] = "";
@@ -285,8 +343,11 @@ var autoCORS = {
 				if(json.headers == null)
 					json.headers = { };
 
-				let alias = lines[i].substring(0, lines[i].indexOf(":")).trim();
-				let value = lines[i].substring(lines[i].indexOf(":") + 1).trim();
+				let alias =
+					lines[i].substring(0, lines[i].indexOf(":")).trim();
+
+				let value =
+					lines[i].substring(lines[i].indexOf(":") + 1).trim();
 
 				json.headers[alias] = value;
 			}
@@ -302,6 +363,14 @@ var autoCORS = {
 		return json;
 	},
 	utils: {
+		checkWhitelist: (uri) => {
+
+			return autoCORS.utils.whitelist.filter(
+				item => item.endsWith("/") ?
+					uri.toLowerCase().startsWith(item.toLowerCase()) :
+					uri.toLowerCase() == item.toLowerCase()
+			).length == 0;
+		},
 		formatGithubURI: (uri) => {
 
 			uri = uri.substring(34);
@@ -318,7 +387,80 @@ var autoCORS = {
 				repo +
 				"/" +
 				uri.substring(uri.indexOf("/") + 1);
+		},
+		proxies: {
+			corsProxy: (request) => {
+
+				if(!autoCORS.utils.checkWhitelist(request.request.uri))
+					return request;
+
+				request = JSON.parse(JSON.stringify(request));
+
+				if(request.request.uri.startsWith(
+					"https://raw.githubusercontent.com/")) {
+
+					request.request.uri =
+						autoCORS.utils.formatGithubURI(
+							request.request.uri
+						);
+				}
+
+				else {
+				
+					request.request.uri =
+						"https://corsproxy.io/?url=" +
+							encodeURIComponent(
+								request.request.uri
+							).split("%20").join("%2520");
+				}
+
+				return request;
+			}
+		},
+		whitelist: [
+			"http://127.0.0.1",
+			"https://127.0.0.1",
+			"http://localhost",
+			"https://localhost",
+			"https://cdn.jsdelivr.net/"
+		]
+	},
+	write: (path, content, callback) => {
+
+		if(autoCORS.getPlatform() == "browser") {
+
+			if(callback == true) {
+
+				let element = document.createElement('a');
+		
+				element.setAttribute(
+					'href',
+					'data:text/plain;charset=utf-8,' +
+						encodeURIComponent(content));
+			
+				if(path != null)
+					element.setAttribute('download', path);
+			
+				element.style.display = 'none';
+				document.documentElement.appendChild(element);
+			
+				element.click();
+			
+				document.documentElement.removeChild(element);
+			}
+
+			// STUB - DOWNLOAD / VIRTUAL SYSTEM
+
+			return;
 		}
+
+		if(callback != null)
+			require("fs").writeFile(path, content, "utf-8", callback);
+
+		else
+			require("fs").writeFileSync(path, content);
+
+		// STUB - FILL IN NON-EXISTENT PATHS
 	}
 };
 

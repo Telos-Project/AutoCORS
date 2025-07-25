@@ -4,8 +4,9 @@
 
 ***You Shall Pass!***
 
-AutoCORS is a set of conventions and associated utilities which enable in-browser HTTP requests to
-be automatically routed through CORS proxies.
+AutoCORS is a JavaScript IO library, which, among other things, provides a set of utilities, built
+upon associated conventions, which enable in-browser HTTP requests to be automatically routed
+through CORS proxies.
 
 ## 2 - Contents
 
