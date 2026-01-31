@@ -36,12 +36,12 @@ The body field, if present, contains a string specifying the body of the HTTP re
 
 An HTTP JSON GET request to example.com:
 
-    { "request": { "method: "GET", uri: "https://example.com/" } }
+    { "request": { "method": "GET", uri: "https://example.com/" } }
 
 An HTTP JSON POST request to example.com:
 
     {
-    	"request": { "method: "POST", uri: "https://example.com/" },
+    	"request": { "method": "POST", uri: "https://example.com/" },
     	"headers": {
     		"Host": "example.com",
     		"Content-Type": "application/x-www-form-urlencoded",
@@ -54,7 +54,7 @@ An HTTP JSON POST request to example.com:
 
 AutoCORS may be used on any page via the AutoCORS script.
 
-Once included,  sthe scripehall place an object with the alias "autoCORS" into the global namespace
+Once included, the script shall place an object with the alias "autoCORS" into the global namespace
 of the page.
 
 The default functionality of AutoCORS can be activated by running:
