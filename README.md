@@ -75,4 +75,4 @@ The AutoCORS script can be included in your website from the following CDN link:
 
 #### 2.2.2 - Supported Proxies
 
-The AutoCORS script makes use of [https://corsproxy.io/](https://corsproxy.io/) by default.
+The AutoCORS script makes use of [https://cors.lol/](https://cors.lol/) by default.
