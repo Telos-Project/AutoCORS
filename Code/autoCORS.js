@@ -31,6 +31,32 @@ var autoCORS = {
 		return autoCORS.getPlatform() == "browser" ?
 			prompt(text) : require("readline-sync").question(text);
 	},
+	load: (request, callback, options) => {
+
+		options = options != null ? options : { };
+		options.timeout = options.timeout != null ? options.timeout : 10;
+
+		let response = null;
+		let flag = false;
+
+		try {
+			response = autoCORS.send(request);
+		}
+
+		catch(error) {
+			flag = true;
+		}
+
+		if(!(flag || response.response.status == 429))
+			callback(response.body);
+
+		else {
+
+			setTimeout(() => {
+				autoCORS.load(request, callback, options);
+			}, 1000 * options.timeout);
+		}
+	},
 	onRequestDefault: (request) => {
 		return autoCORS.proxy != null ? autoCORS.proxy(request) : null;
 	},
@@ -201,8 +227,16 @@ var autoCORS = {
 	},
 	send: (request, callback) => {
 
-		if(typeof request == "string")
-			request = autoCORS.toJSON(request);
+		if(typeof request == "string") {
+
+			request =
+				request.startsWith("http://") ||
+				request.startsWith("https://") ?
+					{
+						request: { method: "GET", uri: request }
+					} :
+					autoCORS.toJSON(request);
+		}
 
 		let call = autoCORS.getPlatform() == "browser" ?
 			new XMLHttpRequest() :
