@@ -37,17 +37,22 @@ var autoCORS = {
 		options.timeout = options.timeout != null ? options.timeout : 10;
 
 		let response = null;
+		let status = null;
+
 		let flag = false;
 
 		try {
+
 			response = autoCORS.send(request);
+
+			status = response.response.status;
 		}
 
 		catch(error) {
 			flag = true;
 		}
 
-		if(!(flag || response.response.status == 429))
+		if(!flag && status == 200)
 			callback(response.body);
 
 		else {
