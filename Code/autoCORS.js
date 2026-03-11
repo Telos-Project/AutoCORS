@@ -445,7 +445,7 @@ var autoCORS = {
 				}
 
 				else {
-					
+				
 					request.request.uri =
 						"https://api.cors.lol/?url=" + request.request.uri;
 				}
@@ -459,8 +459,7 @@ var autoCORS = {
 			"http://localhost",
 			"https://localhost",
 			"https://cdn.jsdelivr.net/",
-			"https://api.cors.lol/",
-			"https://corsproxy.io/"
+			"https://api.cors.lol/"
 		]
 	},
 	write: (path, content, callback) => {
