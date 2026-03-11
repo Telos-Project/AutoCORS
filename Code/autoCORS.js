@@ -445,32 +445,9 @@ var autoCORS = {
 				}
 
 				else {
-
-					if([
-						"localhost",
-						".github.io",
-						".ngrok.io",
-						"trycloudflare.com"
-					].filter(
-						item => window.
-							location.
-							hostname.
-							toLowerCase().
-							endsWith(item)
-					).length > 0) {
 					
-						request.request.uri =
-							"https://corsproxy.io/?url=" +
-								encodeURIComponent(
-									request.request.uri
-								).split("%20").join("%2520");
-					}
-
-					else {
-					
-						request.request.uri =
-							"https://api.cors.lol/?url=" + request.request.uri;
-					}
+					request.request.uri =
+						"https://api.cors.lol/?url=" + request.request.uri;
 				}
 
 				return request;
