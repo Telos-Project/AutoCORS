@@ -445,9 +445,32 @@ var autoCORS = {
 				}
 
 				else {
-				
-					request.request.uri =
-						"https://api.cors.lol/?url=" + request.request.uri;
+
+					if([
+						"localhost",
+						".github.io",
+						".ngrok.io",
+						"trycloudflare.com"
+					].filter(
+						item => window.
+							location.
+							hostname.
+							toLowerCase().
+							endsWith(item)
+					).length > 0) {
+					
+						request.request.uri =
+							"https://corsproxy.io/?url=" +
+								encodeURIComponent(
+									request.request.uri
+								).split("%20").join("%2520");
+					}
+
+					else {
+					
+						request.request.uri =
+							"https://api.cors.lol/?url=" + request.request.uri;
+					}
 				}
 
 				return request;
@@ -459,7 +482,8 @@ var autoCORS = {
 			"http://localhost",
 			"https://localhost",
 			"https://cdn.jsdelivr.net/",
-			"https://api.cors.lol/"
+			"https://api.cors.lol/",
+			"https://corsproxy.io/"
 		]
 	},
 	write: (path, content, callback) => {
