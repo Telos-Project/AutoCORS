@@ -445,9 +445,19 @@ var autoCORS = {
 				}
 
 				else {
+
+					if(request.request.method.toUpperCase() == "GET") {
+					
+						request.request.uri =
+							"https://api.codetabs.com/v1/proxy/?quest=" +
+							request.request.uri;
+					}
+
+					else {
 				
-					request.request.uri =
-						"https://api.cors.lol/?url=" + request.request.uri;
+						request.request.uri =
+							"https://api.cors.lol/?url=" + request.request.uri;
+					}
 				}
 
 				return request;
