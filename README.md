@@ -36,18 +36,52 @@ The body field, if present, contains a string specifying the body of the HTTP re
 
 An HTTP JSON GET request to example.com:
 
-    { "request": { "method": "GET", uri: "https://example.com/" } }
+    { "request": { "method": "GET", "uri": "https://example.com/" } }
 
 An HTTP JSON POST request to example.com:
 
     {
-    	"request": { "method": "POST", uri: "https://example.com/" },
+    	"request": { "method": "POST", "uri": "https://example.com/" },
     	"headers": {
     		"Host": "example.com",
     		"Content-Type": "application/x-www-form-urlencoded",
     		"Content-Length": "27"
     	},
     	"body": "field1=value1\nfield2=value2"
+    }
+
+#### 2.1.2 - Hypotext Methods
+
+Hypotext methods are non-standard methods used in an HTTP request which indicate that the request
+is to be interpreted in a way differing from a standard HTTP request.
+
+By default, a hypotext method should be encased in square brackets.
+
+##### - 2.1.2.1 - Standard Hypotext Methods
+
+###### - 2.1.2.1.1 - \[UDP\]
+
+Using the hypotext method \[UDP\] marks the request as a UDP datagram rather than an HTTP request.
+
+As such, the request URI need only consist of the target IP or domain, and optionally the target
+port. No headers should be specified, and the body shall define the datagram content.
+
+The response of a request using this method shall be encoded as an HTTP response.
+
+Here's an example request using the \[UDP\] hypotext method:
+
+    [UDP] 127.0.0.1:80
+
+    Hello, world!
+
+And here's the equivalent in HTTP JSON:
+
+    {
+    	"request": {
+    		"method": "[UDP]",
+    		"uri": "127.0.0.1:80"
+    	},
+    	"body": "Hello, world!"
     }
 
 ### 2.2 - Usage

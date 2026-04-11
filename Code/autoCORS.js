@@ -164,7 +164,7 @@ var autoCORS = {
 			let response = onResponse != null ? onResponse(request) : null;
 
 			return onResponse == null ?
-				autoCORS.defaultFetch(url, options) :
+				autoCORS.defaultFetch(uri, options) :
 				new Promise(
 					(resolve) => {
 						resolve({ text: () => { return response; } });
@@ -243,6 +243,21 @@ var autoCORS = {
 					autoCORS.toJSON(request);
 		}
 
+		if(/^\[.*\]$/.test(request.request.method)) {
+
+			if(request.request.method == "[UDP]") {
+
+				autoCORS.sendUDP(
+					request.request.uri.split(":")[0],
+					request.request.uri.split(":")[1],
+					request.body,
+					callback
+				);
+			}
+
+			return;
+		}
+
 		let call = autoCORS.getPlatform() == "browser" ?
 			new XMLHttpRequest() :
 			new (require("xmlhttprequest").XMLHttpRequest)();
@@ -303,6 +318,44 @@ var autoCORS = {
 		
 		if(callback == null)
 			return response;
+	},
+	sendUDP: (host, port, data, callback) => {
+
+		host = host != null ? host : '192.168.10.1';
+		port = port != null ? port : 8889;
+
+		let message = Buffer.from(`${data}`, "utf8");
+			
+		let client = require("dgram").createSocket('udp4');
+		let queue = [];
+
+		client.on('message', function(message) {
+
+			queue.push({
+				time: (new Date()).getTime() / 1000,
+				data: message.toString()
+			});
+		});
+			
+		client.send(message, 0, message.length, port, host, (error, bytes) => {
+
+			if(error != null) {
+
+				callback({ response: { }, body: `${error.stack}` });
+
+				return;
+			}
+
+			queue.push({
+				time: (new Date()).getTime() / 1000,
+				data: "" + bytes
+			});
+
+			if(callback != null)
+				callback({ response: { }, body: JSON.stringify(queue) });
+
+			client.close();
+		});
 	},
 	toHTTP: (json) => {
 
