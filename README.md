@@ -57,9 +57,9 @@ is to be interpreted in a way differing from a standard HTTP request.
 
 By default, a hypotext method should be encased in square brackets.
 
-##### - 2.1.2.1 - Standard Hypotext Methods
+##### 2.1.2.1 - Standard Hypotext Methods
 
-###### - 2.1.2.1.1 - \[UDP\]
+###### 2.1.2.1.1 - \[UDP\]
 
 Using the hypotext method \[UDP\] marks the request as a UDP datagram rather than an HTTP request.
 
